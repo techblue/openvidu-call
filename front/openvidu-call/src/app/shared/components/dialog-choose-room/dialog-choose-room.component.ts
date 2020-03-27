@@ -8,6 +8,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { OvSettings } from '../../models/ov-settings';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogErrorComponent } from '../dialog-error/dialog-error.component';
+import { CookieService } from 'ngx-cookie-service'
 
 interface IDevices {
   label: string;
@@ -52,7 +53,7 @@ export class DialogChooseRoomComponent implements OnInit {
   nicknameFormControl = new FormControl('', [Validators.maxLength(25), Validators.required]);
   matcher = new NicknameMatcher();
 
-  constructor(private route: ActivatedRoute, private apiSrv: ApiService,  public dialog: MatDialog) {}
+  constructor(private route: ActivatedRoute, private apiSrv: ApiService,  public dialog: MatDialog, private cookieService: CookieService) {}
 
   ngOnInit() {
 
@@ -177,7 +178,10 @@ export class DialogChooseRoomComponent implements OnInit {
   }
 
   generateNickname() {
-    const nickname = this.userNickname ? this.userNickname : 'OpenVidu_User' + Math.floor(Math.random() * 100);
+    let nickname = this.cookieService.get("ovnickname");
+    if(nickname === ""){
+      nickname = this.userNickname ? this.userNickname : 'OpenVidu_User' + Math.floor(Math.random() * 100);
+    }
     this.nicknameFormControl.setValue(nickname);
   }
 
@@ -207,6 +211,9 @@ export class DialogChooseRoomComponent implements OnInit {
       this.localUsers.forEach((user) => {
         user.getStreamManager().off('streamAudioVolumeChange');
         user.setNickname(this.nicknameFormControl.value);
+        if (this.nicknameFormControl.value.indexOf("OpenVidu_User") === -1){
+           this.cookieService.set('ovnickname', this.nicknameFormControl.value);
+        }
       });
       if (this.avatarSelected === 'random') {
         this.localUsers[0].removeVideoAvatar();
