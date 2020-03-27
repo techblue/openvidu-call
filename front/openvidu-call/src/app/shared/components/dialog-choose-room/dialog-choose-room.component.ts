@@ -212,7 +212,10 @@ export class DialogChooseRoomComponent implements OnInit {
         user.getStreamManager().off('streamAudioVolumeChange');
         user.setNickname(this.nicknameFormControl.value);
         if (this.nicknameFormControl.value.indexOf("OpenVidu_User") === -1){
-           this.cookieService.set('ovnickname', this.nicknameFormControl.value);
+           var now = new Date(),
+          // this will set the expiration to 12 months
+           exp = new Date(now.getFullYear()+1, now.getMonth(), now.getDate());
+           this.cookieService.set('ovnickname', this.nicknameFormControl.value, exp);
         }
       });
       if (this.avatarSelected === 'random') {
